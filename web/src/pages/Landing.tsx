@@ -1,5 +1,5 @@
-import React from 'react';
-import {FiArrowRight} from 'react-icons/fi';
+import React, { useEffect, useState } from 'react';
+import {FiArrowRight, FiTarget} from 'react-icons/fi';
 import {Link} from 'react-router-dom';
 
 import '../styles/pages/landing.css';
@@ -7,8 +7,27 @@ import '../styles/pages/landing.css';
 import logoImg from '../images/logo.svg';
 
 function Landing() {
+    const [checkbox, setCheckbox] = useState(false);
+
+    useEffect(() => {
+        if (checkbox) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'light');
+        }
+        
+    }, [checkbox]);
+    
+
     return (
         <div id="page-landing">
+            <div className="dark-switch">
+                <input 
+                    type="checkbox" 
+                    id="switch" 
+                    onClick={() => {setCheckbox(true ? !checkbox : false)}} 
+                /><label htmlFor="switch">Toggle</label>
+            </div>
             <div className="content-wrapper">
                 <img src={logoImg} alt="Happy"/>
 

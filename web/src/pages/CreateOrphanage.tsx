@@ -24,6 +24,8 @@ export default function CreateOrphanage() {
   const [images, setImages] = useState<File[]>([]);
   const [previewImages, setPreviewImages] = useState<string[]>([]);
 
+  const theme = document.documentElement.attributes.getNamedItem('data-theme')?.nodeValue;
+
   function handleMapClick(event: LeafletMouseEvent) {
     const {lat, lng} = event.latlng;
 
@@ -91,7 +93,7 @@ export default function CreateOrphanage() {
               onClick={handleMapClick}
             >
               <TileLayer 
-                url={`https://api.mapbox.com/styles/v1/mapbox/light-v10/tiles/256/{z}/{x}/{y}@2x?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`}
+                url={`https://api.mapbox.com/styles/v1/mapbox/${theme}-v10/tiles/256/{z}/{x}/{y}@2x?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`}
               />
 
               {position.latitude !== 0 && (

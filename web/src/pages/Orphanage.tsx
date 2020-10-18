@@ -33,6 +33,8 @@ export default function Orphanage() {
   const [orphanage, setOrphanage] = useState<Orphanage>();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
+  const theme = document.documentElement.attributes.getNamedItem('data-theme')?.nodeValue;
+
   useEffect(() => {
     api.get(`orphanages/${params.id}`).then(response => {
         setOrphanage(response.data);
@@ -86,7 +88,7 @@ export default function Orphanage() {
                 doubleClickZoom={false}
               >
                 <TileLayer 
-                  url={`https://api.mapbox.com/styles/v1/mapbox/light-v10/tiles/256/{z}/{x}/{y}@2x?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`}
+                  url={`https://api.mapbox.com/styles/v1/mapbox/${theme}-v10/tiles/256/{z}/{x}/{y}@2x?access_token=${process.env.REACT_APP_MAPBOX_TOKEN}`}
                 />
                 <Marker interactive={false} icon={mapIcon} position={[orphanage.latitude, orphanage.longitude]} />
               </Map>

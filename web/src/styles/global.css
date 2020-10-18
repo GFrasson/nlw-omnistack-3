@@ -1,3 +1,25 @@
+html {
+    --gradient: linear-gradient(329.54deg, #29B6D1 0%, #00C7C7 100%);
+    --side-bar-gradient: linear-gradient(329.54deg, #15B6D6 0%, #15D6D6 100%);
+    --background-form: #FFFFFF;
+    --background-textarea: #F5F8FA;
+    --font-color: #5C8599;
+    --border: #D3E2E5;
+}
+
+html[data-theme='dark'] {
+    --gradient: linear-gradient(329.54deg, #1c7586 0%, #016666 100%);
+    --side-bar-gradient: linear-gradient(329.54deg, #1c7586 0%,  #016666 100%);
+    --background-form: #535353;
+    --background-textarea: #c9c9c9;
+    --font-color: #e1e5e7;
+    --border: #494d4e;
+}
+
+html[data-theme='dark'] body {
+    background: #444444;
+}
+
 * {
     margin: 0;
     padding: 0;
