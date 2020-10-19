@@ -1,22 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  ScrollView, 
-  View, 
-  StyleSheet, 
-  Switch, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
-  Image
-} from 'react-native';
+import { ScrollView, View, StyleSheet, Switch, Text, TextInput, TouchableOpacity, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { RectButton } from 'react-native-gesture-handler';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import * as ImagePicker from 'expo-image-picker'
-
+import * as ImagePicker from 'expo-image-picker';
 import api from '../../services/api';
 
-interface OrphanageDataParams {
+interface OrphanageDataRouteParams {
   position: {
     latitude: number;
     longitude: number;
@@ -24,20 +14,29 @@ interface OrphanageDataParams {
 }
 
 export default function OrphanageData() {
-  const routes = useRoute();
-  const navigation = useNavigation();
-
-  const { position } = routes.params as OrphanageDataParams;
-
   const [name, setName] = useState('');
   const [about, setAbout] = useState('');
   const [instructions, setInstructions] = useState('');
   const [opening_hours, setOpeningHours] = useState('');
   const [open_on_weekends, setOpenOnWeekends] = useState(true);
-  const [images, setImages] = useState<string[]>([]);
+  const [imagesUri, setImagesUri] = useState<string[]>([]);
+  
+  const navigation = useNavigation();
+  const route = useRoute();
+  const params = route.params as OrphanageDataRouteParams;
 
-  const handleCreateOrphanage = () => {
-    const { latitude, longitude } = position;
+  async function handleCreateOrphanage() {
+    const {latitude, longitude} = params.position;
+
+    console.log({
+      name,
+      latitude,
+      longitude,
+      about,
+      instructions,
+      opening_hours,
+      open_on_weekends,
+    });
 
     const data = new FormData();
 
@@ -49,43 +48,42 @@ export default function OrphanageData() {
     data.append('opening_hours', opening_hours);
     data.append('open_on_weekends', String(open_on_weekends));
 
-    images.forEach((image, index) => {
+    imagesUri.forEach((imageUri, index) => {
       data.append('images', {
-        name: `image_${index}.jpg`, 
+        name: `image_${index}.jpg`,
         type: 'image/jpg',
-        uri: image
+        uri: imageUri,
       } as any);
-    });
+    })
 
-    api.post('/orphanages', data)
-      .then(() => {
-        navigation.navigate('OrphanagesMap');
-      })
-      .catch(() => {
-        return alert('Houve um erro inesperado.');
-      });
+    await api.post('orphanages', data);
+
+    navigation.navigate('OrphanagesMap');
   }
 
-  const handleSelectImages = async () => {
-    const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
+  async function handleSelectImages() {
+    const {status} = await ImagePicker.requestCameraRollPermissionsAsync();
 
     if (status !== 'granted') {
-      return alert('Necessário conceder acesso as fotos.');
+      alert('Eita, precisamos de acesso às suas fotos para realizarmos o cadastro...');
+      return;
     }
-    
+
     const result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
       quality: 1,
-      mediaTypes: ImagePicker.MediaTypeOptions.Images
-    })
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    });
 
-    if (result.cancelled) return;
+    if (result.cancelled) {
+      return;
+    }
 
-    const { uri: image } = result;
+    const {uri} = result;
 
-    setImages([...images, image])
+    setImagesUri([...imagesUri, uri]);
   }
-
+  
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 24 }}>
       <Text style={styles.title}>Dados</Text>
@@ -94,7 +92,7 @@ export default function OrphanageData() {
       <TextInput
         style={styles.input}
         value={name}
-        onChangeText={setName}
+        onChangeText={text => {setName(text)}}
       />
 
       <Text style={styles.label}>Sobre</Text>
@@ -102,26 +100,27 @@ export default function OrphanageData() {
         style={[styles.input, { height: 110 }]}
         multiline
         value={about}
-        onChangeText={setAbout}
+        onChangeText={text => {setAbout(text)}}
       />
 
       {/* <Text style={styles.label}>Whatsapp</Text>
       <TextInput
         style={styles.input}
-      /> */} 
+      /> */}
 
       <Text style={styles.label}>Fotos</Text>
 
-      <View style={styles.uploadedImageContainer}>
-        {images.map((image) => {
+      <View style={styles.uploadedImagesContainer}>
+        {imagesUri.map(imageUri => {
           return (
             <Image 
-              key={image}
+              key={imageUri}
+              source={{uri: imageUri}}
               style={styles.uploadedImage}
-              source={{ uri: image }}
             />
           );
         })}
+
       </View>
 
       <TouchableOpacity style={styles.imagesInput} onPress={handleSelectImages}>
@@ -135,14 +134,14 @@ export default function OrphanageData() {
         style={[styles.input, { height: 110 }]}
         multiline
         value={instructions}
-        onChangeText={setInstructions}
+        onChangeText={text => {setInstructions(text)}}
       />
 
       <Text style={styles.label}>Horario de visitas</Text>
       <TextInput
         style={styles.input}
         value={opening_hours}
-        onChangeText={setOpeningHours}
+        onChangeText={text => {setOpeningHours(text)}}
       />
 
       <View style={styles.switchContainer}>
@@ -151,7 +150,7 @@ export default function OrphanageData() {
           thumbColor="#fff" 
           trackColor={{ false: '#ccc', true: '#39CC83' }}
           value={open_on_weekends}
-          onValueChange={setOpenOnWeekends}
+          onValueChange={value => setOpenOnWeekends(value)}
         />
       </View>
 
@@ -185,7 +184,7 @@ const styles = StyleSheet.create({
 
   comment: {
     fontSize: 11,
-    color: '#8fa7b3'
+    color: '#8fa7b3',
   },
 
   input: {
@@ -197,11 +196,11 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     paddingHorizontal: 24,
     marginBottom: 16,
-    textAlignVertical: 'top'
+    textAlignVertical: 'top',
   },
 
-  uploadedImageContainer: {
-    flexDirection: 'row'
+  uploadedImagesContainer: {
+    flexDirection: 'row',
   },
 
   uploadedImage: {
@@ -209,7 +208,7 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 20,
     marginBottom: 32,
-    marginRight:8
+    marginRight: 8,
   },
 
   imagesInput: {

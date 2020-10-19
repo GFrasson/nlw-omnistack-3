@@ -1,23 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { 
-  Image, 
-  View, 
-  ScrollView, 
-  Text, 
-  StyleSheet, 
-  Dimensions, 
-  TouchableOpacity, 
-  Linking
-} from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import { Image, View, ScrollView, Text, StyleSheet, Dimensions, TouchableOpacity, Linking } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Feather, FontAwesome } from '@expo/vector-icons';
 import { RectButton } from 'react-native-gesture-handler';
-import { useRoute } from '@react-navigation/native'
+import {useRoute} from '@react-navigation/native';
 
 import mapMarkerImg from '../images/map-marker.png';
 import api from '../services/api';
 
-interface OrphanageDetailsParams {
+interface OrphanageDetailsRouteParams {
   id: number;
 }
 
@@ -31,41 +22,40 @@ interface Orphanage {
   opening_hours: string;
   open_on_weekends: boolean;
   images: Array<{
-    id: string;
+    id: number;
     url: string;
   }>
 }
 
 export default function OrphanageDetails() {
   const route = useRoute();
-
-  const { id } = route.params as OrphanageDetailsParams
-
   const [orphanage, setOrphanage] = useState<Orphanage>();
 
+  const params = route.params as OrphanageDetailsRouteParams;
+
   useEffect(() => {
-    api.get(`/orphanages/${id}`).then(({ data }) => {
-      setOrphanage(data)
-    })
-  }, [id])
+    api.get(`orphanages/${params.id}`).then(response => {
+      setOrphanage(response.data);
+    });
+  }, [params.id]);
 
   if (!orphanage) {
     return (
       <View style={styles.container}>
-        <Text style={styles.description} >Carregando...</Text>
+        <Text style={styles.description}>Carregando ...</Text>
       </View>
     )
   }
 
-  const handleOpenGoogleMapsRoutes = () => {
-    Linking.openURL(`http://maps.google.com/maps?saddr=${orphanage.latitude},${orphanage.longitude}`);
+  function handleOpenGoogleMapRoutes() {
+    Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${orphanage?.latitude},${orphanage?.longitude}`);
   }
- 
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.imagesContainer}>
         <ScrollView horizontal pagingEnabled>
-          {orphanage.images.map((image) => {
+          {orphanage.images.map(image => {
             return (
               <Image 
                 key={image.id}
@@ -74,6 +64,7 @@ export default function OrphanageDetails() {
               />
             );
           })}
+          
         </ScrollView>
       </View>
 
@@ -83,6 +74,7 @@ export default function OrphanageDetails() {
       
         <View style={styles.mapContainer}>
           <MapView 
+            provider={PROVIDER_GOOGLE}
             initialRegion={{
               latitude: orphanage.latitude,
               longitude: orphanage.longitude,
@@ -104,7 +96,7 @@ export default function OrphanageDetails() {
             />
           </MapView>
 
-          <TouchableOpacity onPress={handleOpenGoogleMapsRoutes} style={styles.routesContainer}>
+          <TouchableOpacity onPress={handleOpenGoogleMapRoutes} style={styles.routesContainer}>
             <Text style={styles.routesText}>Ver rotas no Google Maps</Text>
           </TouchableOpacity>
         </View>
@@ -112,31 +104,31 @@ export default function OrphanageDetails() {
         <View style={styles.separator} />
 
         <Text style={styles.title}>Instruções para visita</Text>
-            <Text style={styles.description}>{orphanage.instructions}</Text>
+        <Text style={styles.description}>{orphanage.instructions}</Text>
 
         <View style={styles.scheduleContainer}>
           <View style={[styles.scheduleItem, styles.scheduleItemBlue]}>
-            <Feather name='clock' size={40} color='#2AB5D1' />
+            <Feather name="clock" size={40} color="#2AB5D1" />
             <Text style={[styles.scheduleText, styles.scheduleTextBlue]}>Segunda à Sexta {orphanage.opening_hours}</Text>
           </View>
-
+          
           {orphanage.open_on_weekends ? (
             <View style={[styles.scheduleItem, styles.scheduleItemGreen]}>
-             <Feather name='info' size={40} color='#39CC83' />
-             <Text style={[styles.scheduleText, styles.scheduleTextGreen]}>Atendemos fim de semana</Text>
-           </View>
+              <Feather name="info" size={40} color="#39CC83" />
+              <Text style={[styles.scheduleText, styles.scheduleTextGreen]}>Atendemos fim de semana</Text>
+            </View>
           ) : (
             <View style={[styles.scheduleItem, styles.scheduleItemRed]}>
-              <Feather name='info' size={40} color='#FF669D' />
-              <Text style={[styles.scheduleText, styles.scheduleTextRed]}>Não atendemos final de semana</Text>
+              <Feather name="info" size={40} color="#FF669D" />
+              <Text style={[styles.scheduleText, styles.scheduleTextRed]}>Não atendemos fim de semana</Text>
             </View>
           )}
         </View>
 
-        <RectButton style={styles.contactButton} onPress={() => {}}>
-          <FontAwesome name='whatsapp' size={24} color='#FFF' />
+        {/* <RectButton style={styles.contactButton} onPress={() => {}}>
+          <FontAwesome name="whatsapp" size={24} color="#FFF" />
           <Text style={styles.contactButtonText}>Entrar em contato</Text>
-        </RectButton>
+        </RectButton> */}
       </View>
     </ScrollView>
   )
@@ -232,9 +224,9 @@ const styles = StyleSheet.create({
   },
 
   scheduleItemRed: {
-    backgroundColor: '#fdf0f5',
+    backgroundColor: '#FEF6F9',
     borderWidth: 1,
-    borderColor: '#ffbcd4',
+    borderColor: '#FFBCD4',
     borderRadius: 20,
   },
 

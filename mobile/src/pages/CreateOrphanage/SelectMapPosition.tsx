@@ -1,35 +1,36 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Dimensions, Text } from 'react-native';
+
 import { useNavigation } from '@react-navigation/native';
 import { RectButton } from 'react-native-gesture-handler';
-import MapView, { MapEvent, Marker } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE, MapEvent } from 'react-native-maps';
 
 import mapMarkerImg from '../../images/map-marker.png';
 
 export default function SelectMapPosition() {
   const navigation = useNavigation();
+  const [position, setPosition] = useState({latitude: 0, longitude: 0});
 
-  const [position, setPosition] = useState({ latitude: 0, longitude: 0 })
-
-  const handleNextStep = () => {
-    navigation.navigate('OrphanageData', { position });
+  function handleNextStep() {
+    navigation.navigate('OrphanageData', {position});
   }
 
-  const handleSelectedMapPosition = (event: MapEvent) => {
+  function handleSelectMapPosition(event: MapEvent) {
     setPosition(event.nativeEvent.coordinate);
   }
 
   return (
     <View style={styles.container}>
       <MapView 
+        provider={PROVIDER_GOOGLE}
         initialRegion={{
           latitude: -19.5373450340303,
           longitude: -40.6354022026062,
-          latitudeDelta: 0.008,
-          longitudeDelta: 0.008,
+          latitudeDelta: 0.020,
+          longitudeDelta: 0.020,
         }}
         style={styles.mapStyle}
-        onPress={handleSelectedMapPosition}
+        onPress={handleSelectMapPosition}
       >
         {position.latitude !== 0 && (
           <Marker 
